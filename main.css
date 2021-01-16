@@ -17,7 +17,13 @@ main {
   height: 600px;
   border: 1px solid black
 }
-#grid div {
+#info {
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.cell {
   border: 1px solid black;
 }
 .empty { 
@@ -28,4 +34,7 @@ main {
 }
 .player {
   background: red;
+}
+.bullet {
+  background: yellow;
 }
