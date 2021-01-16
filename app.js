@@ -56,17 +56,10 @@ document.addEventListener('keydown', (event) => {
 document.addEventListener('keydown', (event) => {
   const key = event.key
   if (key === ' ') {
-    if (cells[8][playerPos].classList.contains('enemy')) {
-      changeCell(cells[8][playerPos], 'enemy', 'empty')
-      score++
-    } else {
-      changeCell(cells[8][playerPos], 'empty', 'bullet')
-      for (let y = 8; y >=0; y--) {
-        for (let x = 0; x <=9)
-      }
-    }
+    shoot(playerPos)
   }
 })
+
 
 //FUNCTIONS
 //Change cell class
@@ -74,8 +67,14 @@ function changeCell(cellNum, remove, add) {
   cellNum.classList.remove(`${remove}`)
   cellNum.classList.add(`${add}`)
 }
-
-
+//Remove cell class
+function removeClass(cellNum, remove) {
+  cellNum.classList.remove(`${remove}`)
+}
+//Add cell class
+function addClass(cellNum, add) {
+  cellNum.classList.add(`${add}`)
+}
 
 //Populate the grid with the starting enemies
 function startingEnemies() {
@@ -125,7 +124,31 @@ function moveEnemies()  {
 } 
 
 //Player Shooting
-
+function shoot(position) {
+  let bulletY = 8
+  if (cells[8][playerPos].classList.contains('enemy')) {
+    changeCell(cells[8][playerPos], 'enemy', 'empty')
+    score++
+  } else {
+    addClass(cells[bulletY][position], 'bullet')
+    const bulletTime = setInterval(() => {
+      removeClass(cells[bulletY][position], 'bullet')
+      if (cells[bulletY][position] === cells[0][position]) {       
+        clearInterval(bulletTime)
+      } else {
+        if (cells[bulletY - 1][position].classList.contains('enemy')) {
+          changeCell(cells[bulletY - 1][position], 'enemy', 'empty')
+          score++
+          clearInterval(bulletTime)
+        } else {
+          addClass(cells[bulletY-1][position], 'bullet')
+          bulletY--
+        }
+      }
+      
+    }, 50)
+  }
+}
 
 //TESTING FUNCTIONS
 startingEnemies()
