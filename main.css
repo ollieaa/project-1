@@ -24,7 +24,12 @@ main {
   justify-content: center;
 }
 .cell {
+  box-sizing: border-box;
   border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+  align-items: center;
 }
 .empty { 
   background: white
@@ -36,5 +41,17 @@ main {
   background: red;
 }
 .bullet {
-  background: yellow;
+  
+}
+.bulletPic {
+  display: absolute;
+  top: 0px;
+  left: 0px;
+  object-fit: contain;
+}
+.bottlePic {
+  display: absolute;
+  top: 0px;
+  left: 0px;
+  object-fit: contain;
 }
