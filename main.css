@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -13,8 +17,10 @@ main {
 #grid {
   display: flex;
   flex-flow: row wrap;
-  width: 600px;
-  height: 600px;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  height: 500px;
   border: 1px solid black
 }
 #info {
@@ -24,7 +30,6 @@ main {
   justify-content: center;
 }
 .cell {
-  box-sizing: border-box;
   border: 1px solid black;
   display: flex;
   flex-direction: row;
@@ -44,14 +49,24 @@ main {
   
 }
 .bulletPic {
-  display: absolute;
-  top: 0px;
-  left: 0px;
+  position: absolute;
   object-fit: contain;
+  z-index: 0;
 }
 .bottlePic {
-  display: absolute;
-  top: 0px;
-  left: 0px;
+  position: absolute;
   object-fit: contain;
+  z-index: 1;
 }
+.cleared {
+  display:flex;
+  flex-direction:row;
+  justify-content:center;
+  align-items: center;
+  position:absolute;
+  width: 500px;
+  height: 200px;
+  background: black;
+  color: white;
+  font-size: 36px;
+} 
