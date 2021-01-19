@@ -221,6 +221,7 @@ function shoot(position) {
     const bullet = document.createElement('img')
     bullet.src='./images/bullet.png'
     addClass(bullet, 'bulletPic')
+    console.log('hello')
     cells[bulletY][position].appendChild(bullet)
     //Animation for bullet travel
     const bulletTime = setInterval(() => {
