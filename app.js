@@ -76,12 +76,12 @@ start.addEventListener('click', () => {
 function startGame() {
   score = 0
   lives = 3
-  wave = 1
   play = true
   fire = true
   scoreDisplay.innerText = `Score: ${score}`
   livesDisplay.innerText = `Lives: ${lives}`
   startingEnemies(wave)
+  addClass(cells[9][5], 'player')
   const enemyMoveInt = setInterval(() => {
     moveEnemies()
   }, 500) 
@@ -94,14 +94,12 @@ function updateScore() {
     play = false
   }
 }
-
 function updateLives() {
   livesDisplay.innerText = `Lives: ${lives}`
   if (lives === 0) {
     gameOver()
   }
 }
-
 function checkEnemies () {
   if (enemiesRemaining === 0 && lives > 0) {
     waveCleared()
@@ -114,11 +112,16 @@ function waveCleared () {
   clearedDisplay.innerText = `Wave ${wave} Cleared!`
   grid.appendChild(clearedDisplay)
   setTimeout (() => {
-    clearedDisplay.innerText = `Get ready for wave ${wave+1}...`
+    clearedDisplay.innerText = `Get ready for Wave ${wave+1}...`
   }, 3000)
   setTimeout (() => {
     grid.removeChild(clearedDisplay)
   }, 6000)
+  setTimeout (() => {
+    startingEnemies()
+    wave+=1
+  }, 6001)
+  
 }
 
 //Add cell class
@@ -153,9 +156,7 @@ function gameOver() {
 
 //Populate the grid with the starting enemies
 function startingEnemies(waveNum) {
-
-  addClass(cells[9][5], 'player')
-
+  enemiesRemaining = 24
   for (let y = 3; y >= 0; y-- ) {
     for (let x = 7; x > 1; x--){
       addClass(cells[y][x], 'enemy')    
@@ -330,7 +331,7 @@ function enemyAttack() {
           bottleY++         
         }
       }      
-    }, 520)
+    }, 120)
   }
 }
 
