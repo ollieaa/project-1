@@ -219,7 +219,7 @@ function shoot(position) {
     //Create new bullet class and image
     addClass(cells[bulletY][position], 'bullet')
     const bullet = document.createElement('img')
-    bullet.src='../images/bullet.png'
+    bullet.src='./images/bullet.png'
     addClass(bullet, 'bulletPic')
     cells[bulletY][position].appendChild(bullet)
     //Animation for bullet travel
