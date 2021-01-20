@@ -124,7 +124,7 @@ function startGame() {
   addClass(cells[8][4], 'player')
   moveFunction()
   enemyAttackLoop()
-  addClass(cells[5][8], 'squad')
+  addClass(cells[5][8], 'POL')
 }
 function waveCleared () {
   play = false
@@ -266,7 +266,11 @@ function shoot(position) {
     //Create new bullet class and image
     addClass(cells[bulletY][position], 'bullet')
     const bullet = document.createElement('img')
-    bullet.src='./images/bullet.png'
+    if (POL === false) {
+      bullet.src='./images/bullet.png'
+    } else {
+      bullet.src='./images/bottle.png'
+    }
     addClass(bullet, 'bulletPic')
     cells[bulletY][position].appendChild(bullet)
     //Animation for bullet travel
@@ -314,14 +318,18 @@ function shoot(position) {
           }, 6000)
           clearInterval(bulletTime)
         } else if (cells[bulletY - 1][position].classList.contains('POL')) {
-          
+          removeClass(cells[bulletY - 1][position], 'POL')
+          POL = true
+          setTimeout(() => {
+            POL = false
+          }, 10000)
         } else {
           addClass(cells[bulletY-1][position], 'bullet')
           cells[bulletY-1][position].appendChild(bullet)
           bulletY--
         }
       }
-    }, 30)
+    }, playerAttackSpeed())
   }
 }
 
@@ -346,7 +354,7 @@ function enemyAttack() {
   let bottleY = attacker.column+1
   const bottleX = attacker.row
   //If bottle would spawn on player, dont spawn bottle.
-  if (cells[bottleY][bottleX].classList.contains('player')) {
+  if (cells[bottleY][bottleX].classList.contains('player') && POL === false) {
     lives--
     updateLives()
   //Else spawn bottle
@@ -369,9 +377,13 @@ function enemyAttack() {
       } else {
         //If bottle hits player
         if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
-          lives--
-          updateLives()
-          clearInterval(enemyAttackMotion)
+          if (POL === false) {
+            lives--
+            updateLives()
+            clearInterval(enemyAttackMotion)
+          } else {
+            clearInterval(enemyAttackMotion)
+          }
         } else {
           //Move bottle to next row down
           addClass(cells[bottleY+1][bottleX], 'bottle')
@@ -482,6 +494,13 @@ function spawnEnemies() {
       clearInterval(enemySpawnTime)
     }   
   }, moveSpeed()) 
+}
+function playerAttackSpeed() {
+  if (POL === false) {
+    return 30
+  } else {
+    return 120
+  }
 }
 function spawnLife() {
   if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('POL')) {

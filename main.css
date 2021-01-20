@@ -57,6 +57,9 @@ main {
 .squadRight {
   background: pink;
 }
+.POL {
+  background: turquoise;
+}
 .bulletPic {
   position: absolute;
   object-fit: contain;
