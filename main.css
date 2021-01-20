@@ -40,13 +40,13 @@ main {
   background: white
 }
 .enemy {
-  background: blue;
+  background: green;
 }
 .player {
-  background: red;
+  background: blue;
 }
-.bullet {
-  
+.life {
+  background: red;
 }
 .bulletPic {
   position: absolute;
@@ -58,7 +58,7 @@ main {
   object-fit: contain;
   z-index: 1;
 }
-.cleared {
+.cleared, .gameOver {
   display:flex;
   flex-direction:row;
   justify-content:center;

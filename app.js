@@ -5,18 +5,25 @@ const scoreDisplay = document.querySelector('#score')
 
 //GLOBAL VARIABLES
 const cells = []
-const width = 10
+const width = 9
 let lives = 3 
 let score = 0
 let wave = 1
 const grid = document.querySelector('#grid')
-let playerPos = 5
-let enemiesRemaining = 24
+let playerPos = 4
+let enemyAttackSpeed = [500, 500, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 3000]
 let enemyPositions = []
 
 //GLOBAL GAME STATES
-let play = false
 let fire = true
+let enemiesRemaining = null
+let spawnsRemaining = null
+let POL = false
+let reinforcements = false
+
+//Intervals
+let moveTime = null
+let enemySpawnTime = null
 
 //Generate an array of arrays of dom objects, making up the cells of the grid. 
 //Having a seperate array for each row in the grid will make life easier down the line.
@@ -43,12 +50,12 @@ for (let y = 0; y < width; y++) {
 document.addEventListener('keydown', (event) => {
   const key = event.key
   if (key === 'ArrowLeft' && !(playerPos === 0)) {
-    removeClass(cells[9][playerPos], 'player')
-    addClass(cells[9][playerPos-1], 'player')
+    removeClass(cells[8][playerPos], 'player')
+    addClass(cells[8][playerPos-1], 'player')
     playerPos--
-  } else if (key === 'ArrowRight' && !(playerPos === 9)) {
-    removeClass(cells[9][playerPos], 'player')
-    addClass(cells[9][playerPos+1], 'player')
+  } else if (key === 'ArrowRight' && !(playerPos === 8)) {
+    removeClass(cells[8][playerPos], 'player')
+    addClass(cells[8][playerPos+1], 'player')
     playerPos++
   }
 })
@@ -73,26 +80,64 @@ start.addEventListener('click', () => {
 
 //FUNCTIONS
 
+function moveFunction() {
+  moveTime = setInterval(() => {
+    moveAssets()
+  }, moveSpeed())
+}
 function startGame() {
   score = 0
   lives = 3
-  play = true
   fire = true
   scoreDisplay.innerText = `Score: ${score}`
   livesDisplay.innerText = `Lives: ${lives}`
   startingEnemies(wave)
-  addClass(cells[9][5], 'player')
-  const enemyMoveInt = setInterval(() => {
-    moveEnemies()
-  }, 500) 
+  updateEnemyPos()
+  addClass(cells[8][4], 'player')
+  moveFunction()
   enemyAttackLoop()
 }
-
+function waveCleared () {
+  clearInterval(moveTime)
+  clearGrid()
+  const clearedDisplay = document.createElement('div')
+  clearedDisplay.classList.add('cleared')
+  clearedDisplay.innerText = `Wave ${wave} Cleared!`
+  grid.appendChild(clearedDisplay)
+  enemyAttackSpeed.pop()
+  setTimeout (() => {
+    clearedDisplay.innerText = `Get ready for Wave ${wave+1}...`
+  }, 3000)
+  setTimeout (() => {
+    grid.removeChild(clearedDisplay)
+  }, 6000)
+  setTimeout (() => {
+    wave+=1
+    startingEnemies(wave)
+    updateEnemyPos()
+    moveFunction()
+    enemyAttackLoop()
+    spawnEnemies()   
+  }, 6050) 
+}
+function clearGrid() {
+  for (let y = 0; y <= 8; y++) {
+    for (let x = 0; x <= 8; x++) {
+      let cell = cells[y][x]
+      if (cell.classList.contains('enemy')){
+        removeClass(cell, 'enemy')
+      }
+      if (cell.classList.contains('bullet')){
+        removeClass(cell, 'bullet')
+      }
+      if (cell.classList.contains('bottle')){
+        removeClass(cell, 'bottle')
+      }
+    }
+  }
+}
 function updateScore() {
   scoreDisplay.innerText = `Score: ${score}`
-  if (enemiesRemaining === 0) {
-    play = false
-  }
 }
 function updateLives() {
   livesDisplay.innerText = `Lives: ${lives}`
@@ -105,25 +150,18 @@ function checkEnemies () {
     waveCleared()
   }
 }
-
-function waveCleared () {
-  const clearedDisplay = document.createElement('div')
-  clearedDisplay.classList.add('cleared')
-  clearedDisplay.innerText = `Wave ${wave} Cleared!`
-  grid.appendChild(clearedDisplay)
-  setTimeout (() => {
-    clearedDisplay.innerText = `Get ready for Wave ${wave+1}...`
-  }, 3000)
-  setTimeout (() => {
-    grid.removeChild(clearedDisplay)
-  }, 6000)
-  setTimeout (() => {
-    startingEnemies()
-    wave+=1
-  }, 6001)
-  
+function updateEnemyPos () {
+  //Clear existing enemy positions
+  enemyPositions = []
+  //Update the current positions of enemies
+  for (let y = 7; y >= 0; y--){
+    for (let x = 0; x <= 8; x++) {
+      if (cells[y][x].classList.contains('enemy')) {
+        enemyPositions.push({column:y, row:x})
+      }
+    }
+  }
 }
-
 //Add cell class
 function addClass(cellNum, add) {
   cellNum.classList.add(`${add}`)
@@ -132,80 +170,58 @@ function addClass(cellNum, add) {
 function removeClass(cellNum, remove) {
   cellNum.classList.remove(`${remove}`)
 }
-
-//Game Over
-function gameOver() {
-  for (let y = 0; y <= 9; y++) {
-    for (let x = 0; x <= 9; x++) {
-      let cell = cells[y][x]
-      if (cell.classList.contains('enemy')){
-        removeClass(cell, 'enemy')
-      }
-      if (cell.classList.contains('player')){
-        removeClass(cell, 'player')
-      }
-      if (cell.classList.contains('bullet')){
-        removeClass(cell, 'bullet')
-      }
-      if (cell.classList.contains('bottle')){
-        removeClass(cell, 'bottle')
-      }
-    }
-  }
-}
-
 //Populate the grid with the starting enemies
 function startingEnemies(waveNum) {
-  enemiesRemaining = 24
-  for (let y = 3; y >= 0; y-- ) {
-    for (let x = 7; x > 1; x--){
-      addClass(cells[y][x], 'enemy')    
+  if (waveNum === 1){
+    //28 initial
+    enemiesRemaining = 28
+    spawnsRemaining = 0
+    for (let y = 3; y >= 0; y-- ) {
+      for (let x = 7; x > 0; x--){
+        addClass(cells[y][x], 'enemy')    
+      }
     }
+  } else if (waveNum === 2) {
+    //24 initial
+    enemiesRemaining = 43
+    spawnsRemaining = 19
+    for (let y = 3; y >= 1; y-- ) {
+      for (let x = 8; x >= 0; x--){
+        if (x > 4 || x < 4) {
+          addClass(cells[y][x], 'enemy') 
+        }     
+      }
+    }
+  } else if (waveNum === 3) {
+    //27 initial
+    enemiesRemaining = 48
+    spawnsRemaining = 21
+    for (let y = 5; y >= 0; y-- ) {
+      for (let x = 8; x >= 0; x--){
+        if (y % 2 === 1) {
+          addClass(cells[y][x], 'enemy') 
+        }     
+      }
+    }
+  } else if (waveNum === 4) {
+
+  } else if (waveNum === 5) {
+
+  } else if (waveNum === 6) {
+
+  } else if (waveNum === 7) {
+
+  } else if (waveNum === 8) {
+
+  } else if (waveNum === 9) {
+
+  } else if (waveNum === 10) {
+
   }
 } 
-
-//Move enemies. To be used within an interval
-function moveEnemies()  {
-  for (let y = 8; y >= 0; y--) {
-    //FOR LEFT CELLS
-    if (y % 2 === 1) {
-      for (let x = 0; x <= 9; x++) {
-        let thisCell = cells[y][x]
-        if (cells[y][x].classList.contains('enemy')) {
-          removeClass(thisCell, 'enemy')
-          if (x === 0) {
-            addClass(cells[y+1][x], 'enemy')
-          } else {
-            addClass(cells[y][x-1], 'enemy')
-          }
-        }
-      }
-    //FOR RIGHT CELLS  
-    } else {
-      for (let x = 9; x >= 0; x--) {
-        let thisCell = cells[y][x]
-        if (thisCell.classList.contains('enemy')) {
-          removeClass(thisCell, 'enemy')
-          if (x === 9 && y === 8) {
-            lives-=1
-            updateLives()
-            enemiesRemaining--
-            checkEnemies()
-          } else if (x === 9) {
-            addClass(cells[y+1][x], 'enemy')
-          } else {
-            addClass(cells[y][x+1], 'enemy')
-          }
-        }
-      }
-    }   
-  }
-  updateEnemyPos()
-} 
-
 //Player Shooting
 function shoot(position) {
-  let bulletY = 8
+  let bulletY = 7
   //If cell above player contains enemy, dont spawn bullet
   if (cells[bulletY][playerPos].classList.contains('enemy')) {
     removeClass(cells[bulletY][playerPos], 'enemy')
@@ -241,12 +257,6 @@ function shoot(position) {
           updateScore()
           clearInterval(bulletTime)
           checkEnemies()
-          //If bullet hits bottle
-        // } else if (cells[bulletY - 1][position].classList.contains('bottle')) {
-        //   removeClass(cells[bulletY - 1][position], 'bottle')
-        //   cells[bulletY - 1][position].removeChild(cells[bulletY - 1][position].firstChild)
-        //   clearInterval(bottleTime)
-          //Else continue bullet travel
         } else {
           addClass(cells[bulletY-1][position], 'bullet')
           cells[bulletY-1][position].appendChild(bullet)
@@ -258,35 +268,18 @@ function shoot(position) {
   }
 }
 
-//Array of possible enemy attack frequencies
-let enemyShootTime = [500, 1000, 1000, 1500, 1500, 2000, 2000, 2000, 3000]
 //Random enemy attack loop
 function enemyAttackLoop() {
-  const randomTime = enemyShootTime[Math.floor(Math.random() * enemyShootTime.length)]
+  const randomTime = enemyAttackSpeed[Math.floor(Math.random() * enemyAttackSpeed.length)]
   setTimeout(() => {
     //Only trigger enemy attack if there are enemies remaining
     if (enemiesRemaining > 0) {
       enemyAttack()
-    }   
-    //Only repeat loop if there are enemies remaining and the wave is not
-    //yet cleared
-    if (enemiesRemaining > 0 && play === true) {
       enemyAttackLoop()
+    } else {
+      return
     }
   }, randomTime)
-}
-
-//Update enemy positions
-function updateEnemyPos () {
-  enemyPositions = []
-  //Update the current positions of enemies
-  for (let y = 8; y >= 0; y--){
-    for (let x = 0; x <= 9; x++) {
-      if (cells[y][x].classList.contains('enemy')) {
-        enemyPositions.push({column:y, row:x})
-      }
-    }
-  }
 }
 
 //Enemy attack
@@ -299,8 +292,6 @@ function enemyAttack() {
   if (cells[bottleY][bottleX].classList.contains('player')) {
     lives--
     updateLives()
-  } else if (cells[bottleY][bottleX].classList.contains('player')) {
-    ;
   //Else spawn bottle
   } else {
     //Create new bottle class and image
@@ -310,20 +301,20 @@ function enemyAttack() {
     addClass(bottle, 'bottlePic')
     cells[bottleY][bottleX].appendChild(bottle)
     //Animation for bottle travel
-    const bottleTime = setInterval(() => {
+     const enemyAttackMotion = setInterval(() => {
       //Clear bottle from current position
       removeClass(cells[bottleY][bottleX], 'bottle')
       bottle.remove()
       //If bottle is in bottom row of grid, stop bottle travel
-      if (cells[bottleY][bottleX] === cells[9][bottleX]) {       
-        clearInterval(bottleTime)
+      if (cells[bottleY][bottleX] === cells[8][bottleX]) {       
+        clearInterval(enemyAttackMotion)
       //Else continue bottle travel
       } else {
         //If bottle hits player
         if (cells[bottleY+1][bottleX].classList.contains('player')) {
           lives--
           updateLives()
-          clearInterval(bottleTime)
+          clearInterval(enemyAttackMotion)
         } else {
           //Move bottle to next row down
           addClass(cells[bottleY+1][bottleX], 'bottle')
@@ -335,10 +326,106 @@ function enemyAttack() {
   }
 }
 
+//Move all elements. To be used within an interval
+function moveAssets()  {
+  for (let y = 7; y >= 0; y--) {
+    //FOR LEFT CELLS
+    if (y % 2 === 1) {
+      for (let x = 0; x <= 8; x++) {
+        let thisCell = cells[y][x]
+        if (thisCell.classList.contains('enemy')) {
+          removeClass(thisCell, 'enemy')
+          if (x === 0 && y === 7) {
+            lives-=1
+            updateLives()
+            enemiesRemaining--
+            checkEnemies()
+          } else if (x === 0) {
+            addClass(cells[y+1][x], 'enemy')
+          } else {
+            addClass(cells[y][x-1], 'enemy')
+          }
+        }
+      }
+    //FOR RIGHT CELLS  
+    } else {
+      for (let x = 8; x >= 0; x--) {
+        let thisCell = cells[y][x]
+        if (thisCell.classList.contains('enemy')) {
+          removeClass(thisCell, 'enemy')
+          if (x === 8) {
+            addClass(cells[y+1][x], 'enemy')
+          } else {
+            addClass(cells[y][x+1], 'enemy')
+          }
+        }
+      }
+    }   
+  }
+  updateEnemyPos()
+} 
+//TESTING FUNCTIONS
 //Spawn enemies
-function spawnEnemies(waveNum) {
-  addClass(cells[0][0], 'enemy')
+
+//Game Over
+function gameOver() {
+  clearInterval(moveTime)
+  clearGrid()
+  for (let x = 0; x <= 8; x++) {
+    let cell = cells[8][x]
+    if (cells[8][x].classList.contains('player')){
+      removeClass(cell, 'player')
+    }
+  }
+  const gameOverDisplay = document.createElement('div')
+  gameOverDisplay.classList.add('gameOver')
+  gameOverDisplay.innerText = 'Game Over. You\'re zombie food now...'
+  grid.appendChild(gameOverDisplay) 
 }
 
-//TESTING FUNCTIONS
+function moveSpeed() {
+  if (wave === 1 || wave === 2) {
+    return 1000
+  } else if (wave === 3 || wave === 4) {
+    return 800
+  } else if (wave === 5 || wave === 6) {
+    return 600
+  } else if (wave === 7 || wave === 8) {
+    return 500
+  } else if (wave === 9) {
+    return 400
+  } else if (wave === 10) {
 
+  }
+}
+function spawnEnemies() {
+  enemySpawnTime = setInterval (() => {
+    if (spawnsRemaining > 0) {
+      addClass(cells[0][0], 'enemy')
+      spawnsRemaining--
+    } else {
+      clearInterval(enemySpawnTime)
+    }   
+  }, moveSpeed()) 
+}
+function spawnLife() {
+  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('POL')) {
+    addClass(cells[0][0], 'life')
+  } else {
+    return
+  }
+}
+function spawnPOL() {
+  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('life')) {
+    addClass(cells[0][0], 'POL')
+  } else {
+    return
+  }
+}
+function spawnGang() {
+  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('life')) {
+    addClass(cells[0][0], 'gang')
+  } else {
+    return
+  } 
+}
