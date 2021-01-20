@@ -19,7 +19,8 @@ let fire = true
 let enemiesRemaining = null
 let spawnsRemaining = null
 let POL = false
-let reinforcements = false
+let squad = false
+let play = false
 
 //Intervals
 let moveTime = null
@@ -49,21 +50,47 @@ for (let y = 0; y < width; y++) {
 //player movement
 document.addEventListener('keydown', (event) => {
   const key = event.key
-  if (key === 'ArrowLeft' && !(playerPos === 0)) {
-    removeClass(cells[8][playerPos], 'player')
-    addClass(cells[8][playerPos-1], 'player')
-    playerPos--
-  } else if (key === 'ArrowRight' && !(playerPos === 8)) {
-    removeClass(cells[8][playerPos], 'player')
-    addClass(cells[8][playerPos+1], 'player')
-    playerPos++
+  if (squad === false){
+    if (key === 'ArrowLeft' && !(playerPos === 0)) {
+      removeClass(cells[8][playerPos], 'player')
+      addClass(cells[8][playerPos-1], 'player')
+      playerPos--
+    } else if (key === 'ArrowRight' && !(playerPos === 8)) {
+      removeClass(cells[8][playerPos], 'player')
+      addClass(cells[8][playerPos+1], 'player')
+      playerPos++
+    }
+  } else if (squad === true){
+    if (key === 'ArrowLeft' && !(playerPos-1 === 0)) {
+      removeClass(cells[8][playerPos], 'player')
+      removeClass(cells[8][playerPos-1], 'squadLeft')
+      removeClass(cells[8][playerPos+1], 'squadRight')
+      addClass(cells[8][playerPos-1], 'player')
+      addClass(cells[8][playerPos-2], 'squadLeft')
+      addClass(cells[8][playerPos], 'squadRight')
+      playerPos--
+    } else if (key === 'ArrowRight' && !(playerPos+1 === 8)) {
+      removeClass(cells[8][playerPos], 'player')
+      removeClass(cells[8][playerPos-1], 'squadLeft')
+      removeClass(cells[8][playerPos+1], 'squadRight')
+      addClass(cells[8][playerPos+1], 'player')
+      addClass(cells[8][playerPos], 'squadLeft')
+      addClass(cells[8][playerPos+2], 'squadRight')
+      playerPos++
+    }
   }
 })
 //player shooting
 document.addEventListener('keydown', (event) => {
   const key = event.key
   if (key === ' ' && fire === true) {     
-    shoot(playerPos)
+    if (squad === false) {
+      shoot(playerPos)
+    } else if (squad === true) {
+      shoot(playerPos)
+      shoot(playerPos-1)
+      shoot(playerPos+1)
+    }
     fire = false
     setTimeout(() => {
       fire = true
@@ -86,6 +113,7 @@ function moveFunction() {
   }, moveSpeed())
 }
 function startGame() {
+  play = true
   score = 0
   lives = 3
   fire = true
@@ -96,8 +124,10 @@ function startGame() {
   addClass(cells[8][4], 'player')
   moveFunction()
   enemyAttackLoop()
+  addClass(cells[5][8], 'squad')
 }
 function waveCleared () {
+  play = false
   clearInterval(moveTime)
   clearGrid()
   const clearedDisplay = document.createElement('div')
@@ -117,7 +147,8 @@ function waveCleared () {
     updateEnemyPos()
     moveFunction()
     enemyAttackLoop()
-    spawnEnemies()   
+    spawnEnemies()
+    play = true   
   }, 6050) 
 }
 function clearGrid() {
@@ -223,8 +254,8 @@ function startingEnemies(waveNum) {
 function shoot(position) {
   let bulletY = 7
   //If cell above player contains enemy, dont spawn bullet
-  if (cells[bulletY][playerPos].classList.contains('enemy')) {
-    removeClass(cells[bulletY][playerPos], 'enemy')
+  if (cells[bulletY][position].classList.contains('enemy')) {
+    removeClass(cells[bulletY][position], 'enemy')
     updateEnemyPos()
     score++
     enemiesRemaining--
@@ -257,13 +288,39 @@ function shoot(position) {
           updateScore()
           clearInterval(bulletTime)
           checkEnemies()
+          //If bullet hits life power
+        } else if (cells[bulletY - 1][position].classList.contains('life')) {
+          removeClass(cells[bulletY - 1][position], 'life')
+          lives++ 
+          updateLives()   
+          clearInterval(bulletTime)
+          //If bullet hits squad power
+        } else if (cells[bulletY - 1][position].classList.contains('squad')) {
+          removeClass(cells[bulletY - 1][position], 'squad')
+          squad = true
+          for (let x = 0; x <= 8; x++) {
+            if (cells[8][x].classList.contains('player')) {
+              removeClass(cells[8][x], 'player')
+            }
+          }
+          addClass(cells[8][4], 'player')
+          addClass(cells[8][3], 'squadLeft')
+          addClass(cells[8][5], 'squadRight')
+          playerPos = 4
+          setTimeout(() => {
+            squad = false
+            removeClass(cells[8][playerPos-1], 'squadLeft')
+            removeClass(cells[8][playerPos+1], 'squadRight') 
+          }, 6000)
+          clearInterval(bulletTime)
+        } else if (cells[bulletY - 1][position].classList.contains('POL')) {
+          
         } else {
           addClass(cells[bulletY-1][position], 'bullet')
           cells[bulletY-1][position].appendChild(bullet)
           bulletY--
         }
       }
-      
     }, 30)
   }
 }
@@ -311,7 +368,7 @@ function enemyAttack() {
       //Else continue bottle travel
       } else {
         //If bottle hits player
-        if (cells[bottleY+1][bottleX].classList.contains('player')) {
+        if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
           lives--
           updateLives()
           clearInterval(enemyAttackMotion)
@@ -333,6 +390,7 @@ function moveAssets()  {
     if (y % 2 === 1) {
       for (let x = 0; x <= 8; x++) {
         let thisCell = cells[y][x]
+        //Move enemies
         if (thisCell.classList.contains('enemy')) {
           removeClass(thisCell, 'enemy')
           if (x === 0 && y === 7) {
@@ -345,6 +403,22 @@ function moveAssets()  {
           } else {
             addClass(cells[y][x-1], 'enemy')
           }
+          //Move life
+        } else if (thisCell.classList.contains('life')) {
+          removeClass(thisCell, 'life')
+          if (x > 0) {
+            addClass(cells[y][x-1], 'life')
+          } 
+        } else if (thisCell.classList.contains('POL')) {
+          removeClass(thisCell, 'POL')
+          if (x > 0) {
+            addClass(cells[y][x-1], 'POL')
+          } 
+        } else if (thisCell.classList.contains('squad')) {
+          removeClass(thisCell, 'squad')
+          if (x > 0) {
+            addClass(cells[y][x-1], 'squad')
+          } 
         }
       }
     //FOR RIGHT CELLS  
@@ -369,6 +443,7 @@ function moveAssets()  {
 
 //Game Over
 function gameOver() {
+  enemiesRemaining = 0
   clearInterval(moveTime)
   clearGrid()
   for (let x = 0; x <= 8; x++) {
@@ -424,7 +499,7 @@ function spawnPOL() {
 }
 function spawnGang() {
   if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('life')) {
-    addClass(cells[0][0], 'gang')
+    addClass(cells[0][0], 'squad')
   } else {
     return
   } 

@@ -48,6 +48,15 @@ main {
 .life {
   background: red;
 }
+.squad {
+  background: black;
+}
+.squadLeft {
+  background: purple;
+}
+.squadRight {
+  background: pink;
+}
 .bulletPic {
   position: absolute;
   object-fit: contain;
