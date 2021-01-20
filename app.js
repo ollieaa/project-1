@@ -13,11 +13,12 @@ const grid = document.querySelector('#grid')
 let playerPos = 4
 let enemyAttackSpeed = [500, 500, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 3000]
 let enemyPositions = []
+let enemiesRemaining = null
+let spawnsRemaining = null
+let bossLives = 20
 
 //GLOBAL GAME STATES
 let fire = true
-let enemiesRemaining = null
-let spawnsRemaining = null
 let POL = false
 let squad = false
 let play = false
@@ -25,6 +26,7 @@ let play = false
 //Intervals
 let moveTime = null
 let enemySpawnTime = null
+let powerSpawnTime = null
 
 //Generate an array of arrays of dom objects, making up the cells of the grid. 
 //Having a seperate array for each row in the grid will make life easier down the line.
@@ -124,32 +126,48 @@ function startGame() {
   addClass(cells[8][4], 'player')
   moveFunction()
   enemyAttackLoop()
-  addClass(cells[5][8], 'POL')
+  powerSpawnLoop()
+  bossMoveLoop()
 }
-function waveCleared () {
+function waveCleared() {
   play = false
   clearInterval(moveTime)
+  clearInterval(powerSpawnTime)
   clearGrid()
+  enemyAttackSpeed.pop()
   const clearedDisplay = document.createElement('div')
   clearedDisplay.classList.add('cleared')
   clearedDisplay.innerText = `Wave ${wave} Cleared!`
   grid.appendChild(clearedDisplay)
-  enemyAttackSpeed.pop()
+  wave++
   setTimeout (() => {
-    clearedDisplay.innerText = `Get ready for Wave ${wave+1}...`
+    clearedDisplay.innerText = `Get ready for Wave ${wave}...`
   }, 3000)
   setTimeout (() => {
     grid.removeChild(clearedDisplay)
   }, 6000)
-  setTimeout (() => {
-    wave+=1
-    startingEnemies(wave)
-    updateEnemyPos()
-    moveFunction()
-    enemyAttackLoop()
-    spawnEnemies()
-    play = true   
-  }, 6050) 
+  if (wave < 10){   
+    setTimeout (() => {  
+      play = true 
+      startingEnemies(wave)
+      updateEnemyPos()
+      moveFunction()
+      enemyAttackLoop()
+      spawnEnemies()
+      powerSpawnLoop()  
+    }, 6050) 
+  } else if (wave === 10) {
+    setTimeout (() => {  
+      play = true 
+      startingEnemies(wave)
+      updateEnemyPos()
+      moveFunction()
+      enemyAttackLoop()
+      spawnEnemies()
+      powerSpawnLoop()
+      bossMoveLoop()  
+    }, 6050)
+  }
 }
 function clearGrid() {
   for (let y = 0; y <= 8; y++) {
@@ -176,12 +194,12 @@ function updateLives() {
     gameOver()
   }
 }
-function checkEnemies () {
+function checkEnemies() {
   if (enemiesRemaining === 0 && lives > 0) {
     waveCleared()
   }
 }
-function updateEnemyPos () {
+function updateEnemyPos() {
   //Clear existing enemy positions
   enemyPositions = []
   //Update the current positions of enemies
@@ -191,6 +209,34 @@ function updateEnemyPos () {
         enemyPositions.push({column:y, row:x})
       }
     }
+  }
+}
+function checkBossLives() {
+  if (bossLives === 0) {
+    for (let y = 0; y <= 1; y++){
+      for (let x = 0; x <= 8; x++) {
+        let thisCell = cells[y][x]
+        if (thisCell.classList.contains('boss1')) {
+          removeClass(thisCell, 'boss1')
+        } else if (thisCell.classList.contains('boss2')) {
+          removeClass(thisCell, 'boss2')
+        } else if (thisCell.classList.contains('boss3')) {
+          removeClass(thisCell, 'boss3')
+        } else if (thisCell.classList.contains('boss4')) {
+          removeClass(thisCell, 'boss4')
+        } else if (thisCell.classList.contains('boss5')) {
+          removeClass(thisCell, 'boss5')
+        } else if (thisCell.classList.contains('boss6')) {
+          removeClass(thisCell, 'boss6')
+        } else if (thisCell.classList.contains('boss7')) {
+          removeClass(thisCell, 'boss7')
+        } else if (thisCell.classList.contains('boss8')) {
+          removeClass(thisCell, 'boss8')
+        }   
+      }
+    }
+    enemiesRemaining--
+    checkEnemies()
   }
 }
 //Add cell class
@@ -247,7 +293,15 @@ function startingEnemies(waveNum) {
   } else if (waveNum === 9) {
 
   } else if (waveNum === 10) {
-
+    enemiesRemaining = 1
+    addClass(cells[0][2], 'boss1')
+    addClass(cells[0][3], 'boss2')
+    addClass(cells[0][4], 'boss3')
+    addClass(cells[0][5], 'boss4')
+    addClass(cells[1][2], 'boss5')
+    addClass(cells[1][3], 'boss6')
+    addClass(cells[1][4], 'boss7')
+    addClass(cells[1][5], 'boss8')
   }
 } 
 //Player Shooting
@@ -323,6 +377,12 @@ function shoot(position) {
           setTimeout(() => {
             POL = false
           }, 10000)
+        } else if (cells[bulletY - 1][position].classList.contains('boss5')||cells[bulletY - 1][position].classList.contains('boss6')||cells[bulletY - 1][position].classList.contains('boss7')||cells[bulletY - 1][position].classList.contains('boss8')) {
+          bossLives--
+          score+5
+          updateScore()
+          clearInterval(bulletTime)
+          checkBossLives()
         } else {
           addClass(cells[bulletY-1][position], 'bullet')
           cells[bulletY-1][position].appendChild(bullet)
@@ -339,7 +399,11 @@ function enemyAttackLoop() {
   setTimeout(() => {
     //Only trigger enemy attack if there are enemies remaining
     if (enemiesRemaining > 0) {
-      enemyAttack()
+      if (enemyPositions.length === 0) {
+        return
+      } else {
+        enemyAttack()
+      }     
       enemyAttackLoop()
     } else {
       return
@@ -349,54 +413,58 @@ function enemyAttackLoop() {
 
 //Enemy attack
 function enemyAttack() {  
-  const randomEnemy = enemyPositions[Math.floor(Math.random() * enemyPositions.length)]
-  const attacker = randomEnemy
-  let bottleY = attacker.column+1
-  const bottleX = attacker.row
-  //If bottle would spawn on player, dont spawn bottle.
-  if (cells[bottleY][bottleX].classList.contains('player') && POL === false) {
-    lives--
-    updateLives()
-  //Else spawn bottle
+  if (enemyPositions.length === 0){
+    return
   } else {
-    //Create new bottle class and image
-    addClass(cells[bottleY][bottleX], 'bottle')
-    const bottle = document.createElement('img')
-    bottle.src='./images/bottle.png'
-    addClass(bottle, 'bottlePic')
-    cells[bottleY][bottleX].appendChild(bottle)
-    //Animation for bottle travel
-     const enemyAttackMotion = setInterval(() => {
-      //Clear bottle from current position
-      removeClass(cells[bottleY][bottleX], 'bottle')
-      bottle.remove()
-      //If bottle is in bottom row of grid, stop bottle travel
-      if (cells[bottleY][bottleX] === cells[8][bottleX]) {       
-        clearInterval(enemyAttackMotion)
-      //Else continue bottle travel
-      } else {
-        //If bottle hits player
-        if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
-          if (POL === false) {
-            lives--
-            updateLives()
-            clearInterval(enemyAttackMotion)
-          } else {
-            clearInterval(enemyAttackMotion)
-          }
+    const randomEnemy = enemyPositions[Math.floor(Math.random() * enemyPositions.length)]
+    const attacker = randomEnemy
+    let bottleY = attacker.column+1
+    const bottleX = attacker.row
+    //If bottle would spawn on player, dont spawn bottle.
+    if (cells[bottleY][bottleX].classList.contains('player') && POL === false) {
+      lives--
+      updateLives()
+    //Else spawn bottle
+    } else {
+      //Create new bottle class and image
+      addClass(cells[bottleY][bottleX], 'bottle')
+      const bottle = document.createElement('img')
+      bottle.src='./images/bottle.png'
+      addClass(bottle, 'bottlePic')
+      cells[bottleY][bottleX].appendChild(bottle)
+      //Animation for bottle travel
+       const enemyAttackMotion = setInterval(() => {
+        //Clear bottle from current position
+        removeClass(cells[bottleY][bottleX], 'bottle')
+        bottle.remove()
+        //If bottle is in bottom row of grid, stop bottle travel
+        if (cells[bottleY][bottleX] === cells[8][bottleX]) {       
+          clearInterval(enemyAttackMotion)
+        //Else continue bottle travel
         } else {
-          //Move bottle to next row down
-          addClass(cells[bottleY+1][bottleX], 'bottle')
-          cells[bottleY+1][bottleX].appendChild(bottle)
-          bottleY++         
-        }
-      }      
-    }, 120)
+          //If bottle hits player
+          if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
+            if (POL === false) {
+              lives--
+              updateLives()
+              clearInterval(enemyAttackMotion)
+            } else {
+              clearInterval(enemyAttackMotion)
+            }
+          } else {
+            //Move bottle to next row down
+            addClass(cells[bottleY+1][bottleX], 'bottle')
+            cells[bottleY+1][bottleX].appendChild(bottle)
+            bottleY++         
+          }
+        }      
+      }, 120)
+    }
   }
 }
 
 //Move all elements. To be used within an interval
-function moveAssets()  {
+function moveAssets() {
   for (let y = 7; y >= 0; y--) {
     //FOR LEFT CELLS
     if (y % 2 === 1) {
@@ -415,7 +483,6 @@ function moveAssets()  {
           } else {
             addClass(cells[y][x-1], 'enemy')
           }
-          //Move life
         } else if (thisCell.classList.contains('life')) {
           removeClass(thisCell, 'life')
           if (x > 0) {
@@ -431,7 +498,7 @@ function moveAssets()  {
           if (x > 0) {
             addClass(cells[y][x-1], 'squad')
           } 
-        }
+        } 
       }
     //FOR RIGHT CELLS  
     } else {
@@ -444,14 +511,13 @@ function moveAssets()  {
           } else {
             addClass(cells[y][x+1], 'enemy')
           }
-        }
+        } 
       }
     }   
   }
   updateEnemyPos()
 } 
-//TESTING FUNCTIONS
-//Spawn enemies
+
 
 //Game Over
 function gameOver() {
@@ -482,13 +548,17 @@ function moveSpeed() {
   } else if (wave === 9) {
     return 400
   } else if (wave === 10) {
-
+    return 500
   }
 }
 function spawnEnemies() {
   enemySpawnTime = setInterval (() => {
     if (spawnsRemaining > 0) {
-      addClass(cells[0][0], 'enemy')
+      if (wave === 10) {
+        addClass(cells[4][0], 'enemy')
+      } else {
+        addClass(cells[0][0], 'enemy')
+      }     
       spawnsRemaining--
     } else {
       clearInterval(enemySpawnTime)
@@ -502,24 +572,108 @@ function playerAttackSpeed() {
     return 120
   }
 }
-function spawnLife() {
-  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('POL')) {
-    addClass(cells[0][0], 'life')
+function powerSpawnLoop() {
+  const powerTimes = [5000, 10000, 15000, 20000, 25000, 30000]
+  setTimeout(() => {
+    if (play === true) {
+      const powerUps = ['squad', 'life', 'POL']
+      if (!cells[3][8].classList.contains('enemy') && !cells[2][8].classList.contains('enemy')) {
+        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+      } else if (!cells[5][8].classList.contains('enemy') && !cells[4][8].classList.contains('enemy')) {
+        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+      } else if (!cells[1][8].classList.contains('enemy') && !cells[0][8].classList.contains('enemy')) {
+        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+      } else {
+        return
+      }
+      powerSpawnLoop()
+    }
+  }, powerTimes[Math.floor(Math.random()* powerTimes.length)])
+}
+
+function bossMoveLoop() {
+  const bossMoveSpeeds = [300, 500, 600, 800, 1000, 1500]
+  setTimeout(() => {
+    if (bossLives > 0) {
+      bossMove()
+      bossMoveLoop()
+    }  
+  }, bossMoveSpeeds[Math.floor(Math.random() * bossMoveSpeeds.length)])
+}
+
+function bossMove() {
+  const bossMoveOptions = ['left', 'right']
+  if (cells[0][0].classList.contains('boss1')) {
+    bossMoveRight()
+  } else if (cells[0][8].classList.contains('boss4')) {
+    bossMoveLeft()
   } else {
-    return
+    if (bossMoveOptions[Math.floor(Math.random() * bossMoveOptions.length)] === 'left'){
+      bossMoveLeft()
+    } else {
+      bossMoveRight()
+    }   
   }
 }
-function spawnPOL() {
-  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('life')) {
-    addClass(cells[0][0], 'POL')
-  } else {
-    return
+function bossMoveRight() {
+  for (let y = 0; y <=1; y++) {
+    for (let x = 8; x >= 0; x--) {
+      if (cells[y][x].classList.contains('boss1')) {
+        removeClass(cells[y][x], 'boss1')
+        addClass(cells[y][x+1], 'boss1')
+      } else if (cells[y][x].classList.contains('boss2')) {
+        removeClass(cells[y][x], 'boss2')
+        addClass(cells[y][x+1], 'boss2')
+      } else if (cells[y][x].classList.contains('boss3')) {
+        removeClass(cells[y][x], 'boss3')
+        addClass(cells[y][x+1], 'boss3')
+      } else if (cells[y][x].classList.contains('boss4')) {
+        removeClass(cells[y][x], 'boss4')
+        addClass(cells[y][x+1], 'boss4')
+      } else if (cells[y][x].classList.contains('boss5')) {
+        removeClass(cells[y][x], 'boss5')
+        addClass(cells[y][x+1], 'boss5')
+      } else if (cells[y][x].classList.contains('boss6')) {
+        removeClass(cells[y][x], 'boss6')
+        addClass(cells[y][x+1], 'boss6')
+      } else if (cells[y][x].classList.contains('boss7')) {
+        removeClass(cells[y][x], 'boss7')
+        addClass(cells[y][x+1], 'boss7')
+      } else if (cells[y][x].classList.contains('boss8')) {
+        removeClass(cells[y][x], 'boss8')
+        addClass(cells[y][x+1], 'boss8')
+      } 
+    }
   }
 }
-function spawnGang() {
-  if (!cells[0][0].classList.contains('enemy') && !cells[0][0].classList.contains('life')) {
-    addClass(cells[0][0], 'squad')
-  } else {
-    return
-  } 
+function bossMoveLeft() {
+  for (let y = 0; y <=1; y++) {
+    for (let x = 0; x <=8; x++) {
+      if (cells[y][x].classList.contains('boss1')) {
+        removeClass(cells[y][x], 'boss1')
+        addClass(cells[y][x-1], 'boss1')
+      } else if (cells[y][x].classList.contains('boss2')) {
+        removeClass(cells[y][x], 'boss2')
+        addClass(cells[y][x-1], 'boss2')
+      } else if (cells[y][x].classList.contains('boss3')) {
+        removeClass(cells[y][x], 'boss3')
+        addClass(cells[y][x-1], 'boss3')
+      } else if (cells[y][x].classList.contains('boss4')) {
+        removeClass(cells[y][x], 'boss4')
+        addClass(cells[y][x-1], 'boss4')
+      } else if (cells[y][x].classList.contains('boss5')) {
+        removeClass(cells[y][x], 'boss5')
+        addClass(cells[y][x-1], 'boss5')
+      } else if (cells[y][x].classList.contains('boss6')) {
+        removeClass(cells[y][x], 'boss6')
+        addClass(cells[y][x-1], 'boss6')
+      } else if (cells[y][x].classList.contains('boss7')) {
+        removeClass(cells[y][x], 'boss7')
+        addClass(cells[y][x-1], 'boss7')
+      } else if (cells[y][x].classList.contains('boss8')) {
+        removeClass(cells[y][x], 'boss8')
+        addClass(cells[y][x-1], 'boss8')
+      } 
+    }
+  }
 }

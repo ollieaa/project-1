@@ -60,6 +60,30 @@ main {
 .POL {
   background: turquoise;
 }
+.boss1 {
+  background: rgb(255, 176, 189);
+}
+.boss2 {
+  background: rgb(255, 139, 158);
+}
+.boss3 {
+  background: rgb(255, 99, 125);
+}
+.boss4 {
+  background: rgb(255, 58, 91);
+}
+.boss5 {
+  background: rgb(247, 13, 52);
+}
+.boss6 {
+  background: rgb(184, 18, 46);
+}
+.boss7 {
+  background: rgb(143, 16, 37);
+}
+.boss8 {
+  background: rgb(104, 15, 30);
+}
 .bulletPic {
   position: absolute;
   object-fit: contain;
