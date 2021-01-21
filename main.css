@@ -94,7 +94,7 @@ main {
   object-fit: contain;
   z-index: 1;
 }
-.cleared, .gameOver {
+.cleared {
   display:flex;
   flex-direction:row;
   justify-content:center;
@@ -106,3 +106,24 @@ main {
   color: white;
   font-size: 36px;
 } 
+.victoryDisplay, .gameOverDisplay {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items: center;
+  position:absolute;
+  width: 500px;
+  height: 500px;
+  background: black;
+  font-size: 36px;
+  color: white;
+}
+.victoryText, .gameOverText {
+  text-align: center;
+  font-size: 36px;
+  color: white;
+}
+.playAgain, .tryAgain {
+  text-align:center;
+  color: white;
+}

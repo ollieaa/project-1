@@ -8,17 +8,17 @@ const cells = []
 const width = 9
 let lives = 3 
 let score = 0
-let wave = 1
+let wave = 9
 const grid = document.querySelector('#grid')
 let playerPos = 4
 let enemyAttackSpeed = [500, 500, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 3000]
 let enemyPositions = []
 let enemiesRemaining = null
 let spawnsRemaining = null
-let bossLives = 20
+let bossLives = 2
 
 //GLOBAL GAME STATES
-let fire = true
+let fire = false
 let POL = false
 let squad = false
 let play = false
@@ -104,10 +104,30 @@ document.addEventListener('keydown', (event) => {
 //Start Game
 start.addEventListener('click', () => {
   startGame()
-  start.blur()
+  start.remove()
 })
 
 //FUNCTIONS
+function initialise() {
+  for (let x = 0; x <= 8; x++) {
+    if (cells[8][x].classList.contains('player')) {
+      removeClass(cells[8][x], 'player')
+    }
+  }
+  wave = 1
+  lives = 3
+  score = 0
+  playerPos = 4
+  squad = false
+  POL = false
+  play = false
+  fire = false
+  enemyAttackSpeed = [500, 500, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 3000]
+  clearInterval(powerSpawnTime)
+  clearInterval(moveTime)
+  clearInterval(enemySpawnTime)
+  clearGrid()
+}
 
 function moveFunction() {
   moveTime = setInterval(() => {
@@ -116,18 +136,15 @@ function moveFunction() {
 }
 function startGame() {
   play = true
-  score = 0
-  lives = 3
   fire = true
   scoreDisplay.innerText = `Score: ${score}`
   livesDisplay.innerText = `Lives: ${lives}`
   startingEnemies(wave)
   updateEnemyPos()
   addClass(cells[8][4], 'player')
-  moveFunction()
+  // moveFunction()
   enemyAttackLoop()
-  powerSpawnLoop()
-  bossMoveLoop()
+  powerSpawn()
 }
 function waveCleared() {
   play = false
@@ -141,7 +158,11 @@ function waveCleared() {
   grid.appendChild(clearedDisplay)
   wave++
   setTimeout (() => {
-    clearedDisplay.innerText = `Get ready for Wave ${wave}...`
+    if (wave < 10) {
+      clearedDisplay.innerText = `Get ready for Wave ${wave}...`
+    } else {
+      clearedDisplay.innerText = `BIG BOSS`
+    }
   }, 3000)
   setTimeout (() => {
     grid.removeChild(clearedDisplay)
@@ -154,7 +175,7 @@ function waveCleared() {
       moveFunction()
       enemyAttackLoop()
       spawnEnemies()
-      powerSpawnLoop()  
+      powerSpawn()  
     }, 6050) 
   } else if (wave === 10) {
     setTimeout (() => {  
@@ -164,7 +185,7 @@ function waveCleared() {
       moveFunction()
       enemyAttackLoop()
       spawnEnemies()
-      powerSpawnLoop()
+      powerSpawn()
       bossMoveLoop()  
     }, 6050)
   }
@@ -175,13 +196,13 @@ function clearGrid() {
       let cell = cells[y][x]
       if (cell.classList.contains('enemy')){
         removeClass(cell, 'enemy')
-      }
-      if (cell.classList.contains('bullet')){
-        removeClass(cell, 'bullet')
-      }
-      if (cell.classList.contains('bottle')){
-        removeClass(cell, 'bottle')
-      }
+      } else if (cell.classList.contains('life')){
+        removeClass(cell, 'life')
+      } else if (cell.classList.contains('squad')){
+        removeClass(cell, 'squad')
+      } else if (cell.classList.contains('POL')){
+        removeClass(cell, 'POL')
+      } 
     }
   }
 }
@@ -235,8 +256,26 @@ function checkBossLives() {
         }   
       }
     }
-    enemiesRemaining--
-    checkEnemies()
+    enemiesRemaining = 0
+    clearGrid()
+    const victoryDisplay = document.createElement('div')
+    victoryDisplay.classList.add('victoryDisplay')
+    grid.appendChild(victoryDisplay)
+    const victoryText = document.createElement('p')
+    victoryText.innerText = 'You made it! The outbreak has successfully been contained!' 
+    victoryText.classList.add('victoryText')
+    victoryDisplay.appendChild(victoryText)
+    const playAgain = document.createElement('div')
+    playAgain.innerText = 'Play again'
+    playAgain.classList.add('playAgain')
+    victoryDisplay.appendChild(playAgain)
+    playAgain.addEventListener('click', () => {
+      initialise()
+      startGame()
+      victoryDisplay.remove()
+      victoryText.remove()
+      playAgain.remove()
+    })
   }
 }
 //Add cell class
@@ -281,19 +320,68 @@ function startingEnemies(waveNum) {
       }
     }
   } else if (waveNum === 4) {
-
+    //20 initial
+    enemiesRemaining = 53
+    spawnsRemaining = 33
+    for (let y = 4; y >= 1; y--) {
+      for (let x = 0; x <= 8; x++) {
+        if (x % 2 === 0) {
+          addClass(cells[y][x], 'enemy')
+        }
+      }
+    }
   } else if (waveNum === 5) {
-
+    //28 initial
+    enemiesRemaining = 58
+    spawnsRemaining = 30
+    for (let y = 4; y >= 1; y-- ) {
+      for (let x = 7; x > 0; x--){
+        addClass(cells[y][x], 'enemy')    
+      }
+    }
   } else if (waveNum === 6) {
-
+    //24 initial
+    enemiesRemaining = 63
+    spawnsRemaining = 39
+    for (let y = 1; y <= 3; y++) {
+      for (let x = 0; x <= 8; x++) {
+        addClass(cells[y][x], 'enemy')
+      }
+    }
   } else if (waveNum === 7) {
-
+    //27 initial
+    enemiesRemaining = 68
+    spawnsRemaining = 41
+    for (let y = 5; y >= 0; y-- ) {
+      for (let x = 8; x >= 0; x--){
+        if (y % 2 === 1) {
+          addClass(cells[y][x], 'enemy') 
+        }     
+      }
+    }
   } else if (waveNum === 8) {
-
+    //20 initial
+    enemiesRemaining = 73
+    spawnsRemaining = 53
+    for (let y = 4; y >= 1; y--) {
+      for (let x = 0; x <= 8; x++) {
+        if (x % 2 === 0) {
+          addClass(cells[y][x], 'enemy')
+        }
+      }
+    }
   } else if (waveNum === 9) {
-
+    //35 initial
+    enemiesRemaining = 78
+    spawnsRemaining = 43
+    for (let y = 5; y >= 1; y-- ) {
+      for (let x = 7; x > 0; x--){
+        addClass(cells[y][x], 'enemy')    
+      }
+    }
   } else if (waveNum === 10) {
-    enemiesRemaining = 1
+    enemiesRemaining = 101
+    spawnsRemaining = 100
     addClass(cells[0][2], 'boss1')
     addClass(cells[0][3], 'boss2')
     addClass(cells[0][4], 'boss3')
@@ -531,9 +619,23 @@ function gameOver() {
     }
   }
   const gameOverDisplay = document.createElement('div')
-  gameOverDisplay.classList.add('gameOver')
-  gameOverDisplay.innerText = 'Game Over. You\'re zombie food now...'
-  grid.appendChild(gameOverDisplay) 
+  gameOverDisplay.classList.add('gameOverDisplay')
+  grid.appendChild(gameOverDisplay)
+  const gameOverText = document.createElement('div')
+  gameOverText.classList.add('gameOverText')
+  gameOverText.innerText = 'Game Over...'
+  gameOverDisplay.appendChild(gameOverText)
+  const tryAgain = document.createElement('div')
+  tryAgain.classList.add('tryAgain')
+  tryAgain.innerText = 'Try again'
+  gameOverDisplay.appendChild(tryAgain)
+  tryAgain.addEventListener('click', () => {
+    initialise()
+    startGame()
+    gameOverDisplay.remove()
+    gameOverText.remove()
+    tryAgain.remove()
+  })
 }
 
 function moveSpeed() {
@@ -572,23 +674,17 @@ function playerAttackSpeed() {
     return 120
   }
 }
-function powerSpawnLoop() {
-  const powerTimes = [5000, 10000, 15000, 20000, 25000, 30000]
-  setTimeout(() => {
-    if (play === true) {
-      const powerUps = ['squad', 'life', 'POL']
-      if (!cells[3][8].classList.contains('enemy') && !cells[2][8].classList.contains('enemy')) {
-        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
-      } else if (!cells[5][8].classList.contains('enemy') && !cells[4][8].classList.contains('enemy')) {
-        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
-      } else if (!cells[1][8].classList.contains('enemy') && !cells[0][8].classList.contains('enemy')) {
-        addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
-      } else {
-        return
-      }
-      powerSpawnLoop()
-    }
-  }, powerTimes[Math.floor(Math.random()* powerTimes.length)])
+function powerSpawn() {
+  powerSpawnTime = setInterval(() => {   
+    const powerUps = ['squad', 'life', 'POL']
+    if (!cells[3][8].classList.contains('enemy') && !cells[2][8].classList.contains('enemy')) {
+      addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+    } else if (!cells[5][8].classList.contains('enemy') && !cells[4][8].classList.contains('enemy')) {
+      addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+    } else if (!cells[1][8].classList.contains('enemy') && !cells[0][8].classList.contains('enemy')) {
+      addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
+    }    
+  }, 20000)
 }
 
 function bossMoveLoop() {
