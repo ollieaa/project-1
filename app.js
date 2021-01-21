@@ -15,6 +15,8 @@ function randomColour() {
 
 //TEST BUTTONS
 const start = document.querySelector('#start')
+const titleScreen = document.querySelector('#titleScreen')
+const gameArea = document.querySelector('#gameArea')
 const scoreDisplay = document.querySelector('#points')
 const livesDisplay = document.querySelector('#lives')
 const waveDisplay = document.querySelector('#wave')
@@ -121,7 +123,7 @@ document.addEventListener('keydown', (event) => {
 //player shooting
 document.addEventListener('keydown', (event) => {
   const key = event.key
-  if (key === ' ' && fire === true) {     
+  if (key === ' ' && fire === true && play === true) {     
     if (squad === false) {
       shoot(playerPos)
     } else if (squad === true) {
@@ -140,7 +142,9 @@ document.addEventListener('keydown', (event) => {
 //Start Game
 start.addEventListener('click', () => {
   startGame()
-  start.remove()
+  titleScreen.remove()
+  gameArea.style.visibility = 'visible'
+
 })
 
 //FUNCTIONS
@@ -192,7 +196,6 @@ function startGame() {
   powerSpawn()
   animateFloor()
   enemiesDisplay.innerText = `Enemies: ${enemiesRemaining}`
-  addClass(cells[6][8], 'POL')
 }
 function waveCleared() {
   play = false
@@ -435,14 +438,12 @@ function startingEnemies(waveNum) {
   } else if (waveNum === 10) {
     enemiesRemaining = 101
     spawnsRemaining = 100
-    addClass(cells[0][2], 'boss1')
-    addClass(cells[0][3], 'boss2')
-    addClass(cells[0][4], 'boss3')
-    addClass(cells[0][5], 'boss4')
-    addClass(cells[1][2], 'boss5')
-    addClass(cells[1][3], 'boss6')
-    addClass(cells[1][4], 'boss7')
-    addClass(cells[1][5], 'boss8')
+    addClass(cells[0][3], 'boss1')
+    addClass(cells[0][4], 'boss2')
+    addClass(cells[0][5], 'boss3')
+    addClass(cells[1][3], 'boss4')
+    addClass(cells[1][4], 'boss5')
+    addClass(cells[1][5], 'boss6')
   }
 } 
 //Player Shooting
@@ -521,7 +522,7 @@ function shoot(position) {
           setTimeout(() => {
             POL = false
           }, 10000)
-        } else if (cells[bulletY - 1][position].classList.contains('boss5')||cells[bulletY - 1][position].classList.contains('boss6')||cells[bulletY - 1][position].classList.contains('boss7')||cells[bulletY - 1][position].classList.contains('boss8')) {
+        } else if (cells[bulletY - 1][position].classList.contains('boss4')||cells[bulletY - 1][position].classList.contains('boss5')||cells[bulletY - 1][position].classList.contains('boss6')) {
           bossLives--
           score+5
           updateScore()
@@ -557,6 +558,7 @@ function enemyAttackLoop() {
 
 //Enemy attack
 function enemyAttack() {  
+  const enemyWeapons = ['./images/can.png', './images/water.png']
   if (enemyPositions.length === 0){
     return
   } else {
@@ -571,9 +573,11 @@ function enemyAttack() {
     //Else spawn bottle
     } else {
       //Create new bottle class and image
+
       addClass(cells[bottleY][bottleX], 'bottle')
       const bottle = document.createElement('img')
-      bottle.src='./images/bottle.png'
+      bottle.src= `${enemyWeapons[Math.floor(Math.random() * enemyWeapons.length)]}`
+      bottle.style.width='2.5%'
       addClass(bottle, 'bottlePic')
       cells[bottleY][bottleX].appendChild(bottle)
       //Animation for bottle travel
@@ -677,10 +681,10 @@ function gameOver() {
   const gameOverDisplay = document.createElement('div')
   gameOverDisplay.classList.add('gameOverDisplay')
   grid.appendChild(gameOverDisplay)
-  const gameOverText = document.createElement('div')
-  gameOverText.classList.add('gameOverText')
-  gameOverText.innerText = 'Game Over...'
-  gameOverDisplay.appendChild(gameOverText)
+  const gameOverImage = document.createElement('img')
+  gameOverDisplay.appendChild(gameOverImage)
+  gameOverImage.src = './images/gameover.png'
+  gameOverImage.classList.add('gameOver')
   const tryAgain = document.createElement('div')
   tryAgain.classList.add('tryAgain')
   tryAgain.innerText = 'Try again'
@@ -689,7 +693,7 @@ function gameOver() {
     initialise()
     startGame()
     gameOverDisplay.remove()
-    gameOverText.remove()
+    gameOverImage.remove()
     tryAgain.remove()
   })
 }
@@ -714,10 +718,8 @@ function spawnEnemies() {
     if (spawnsRemaining > 0) {
       if (wave === 10) {
         addClass(cells[4][0], 'enemy')
-        addClass(cells[4][0], `${randomZom()}`)
       } else {
         addClass(cells[0][0], 'enemy')
-        addClass(cells[0][0], `${randomZom()}`)
       }     
       spawnsRemaining--
     } else {
@@ -759,7 +761,7 @@ function bossMove() {
   const bossMoveOptions = ['left', 'right']
   if (cells[0][0].classList.contains('boss1')) {
     bossMoveRight()
-  } else if (cells[0][8].classList.contains('boss4')) {
+  } else if (cells[0][8].classList.contains('boss3')) {
     bossMoveLeft()
   } else {
     if (bossMoveOptions[Math.floor(Math.random() * bossMoveOptions.length)] === 'left'){
@@ -790,12 +792,6 @@ function bossMoveRight() {
       } else if (cells[y][x].classList.contains('boss6')) {
         removeClass(cells[y][x], 'boss6')
         addClass(cells[y][x+1], 'boss6')
-      } else if (cells[y][x].classList.contains('boss7')) {
-        removeClass(cells[y][x], 'boss7')
-        addClass(cells[y][x+1], 'boss7')
-      } else if (cells[y][x].classList.contains('boss8')) {
-        removeClass(cells[y][x], 'boss8')
-        addClass(cells[y][x+1], 'boss8')
       } 
     }
   }
@@ -821,12 +817,6 @@ function bossMoveLeft() {
       } else if (cells[y][x].classList.contains('boss6')) {
         removeClass(cells[y][x], 'boss6')
         addClass(cells[y][x-1], 'boss6')
-      } else if (cells[y][x].classList.contains('boss7')) {
-        removeClass(cells[y][x], 'boss7')
-        addClass(cells[y][x-1], 'boss7')
-      } else if (cells[y][x].classList.contains('boss8')) {
-        removeClass(cells[y][x], 'boss8')
-        addClass(cells[y][x-1], 'boss8')
       } 
     }
   }

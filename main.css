@@ -11,8 +11,21 @@ body {
   justify-content: center;
   background: linear-gradient(to top right, #100016, #20002c, #3d0268 100%);
 }
+#titleScreen {
+  position: absolute;
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+}
+#banner{
+  
+}
+#start {
+
+}
 #gameArea {
-  /* visibility:hidden; */
+  visibility:hidden;
 }
 #squareArea {
   display: flex;
@@ -142,29 +155,36 @@ body {
   background-size: cover;
 }
 .boss1 {
-  background: rgb(255, 176, 189);
+  background: url('./images/boss1.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
 .boss2 {
-  background: rgb(255, 139, 158);
+  background: url('./images/boss2.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
 .boss3 {
-  background: rgb(255, 99, 125);
+  background: url('./images/boss3.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
 .boss4 {
-  background: rgb(255, 58, 91);
+  background: url('./images/boss4.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
 .boss5 {
-  background: rgb(247, 13, 52);
+  background: url('./images/boss5.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
 .boss6 {
-  background: rgb(184, 18, 46);
+  background: url('./images/boss6.png');
+  background-size:contain;
+  background-repeat: no-repeat;
 }
-.boss7 {
-  background: rgb(143, 16, 37);
-}
-.boss8 {
-  background: rgb(104, 15, 30);
-}
+
 .bulletPic {
   position: absolute;
   object-fit: contain;
@@ -203,6 +223,9 @@ body {
   color: rgb(238, 50, 175);
   text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
+.gameOver {
+  width: 80%;
+}
 .victoryText, .gameOverText {
   text-align: center;
   font-family: 'Potta One', cursive;
@@ -213,7 +236,10 @@ body {
 }
 .playAgain, .tryAgain {
   text-align:center;
+  padding: 15px;
   color: rgb(238, 50, 175);
+  border: 6px solid rgb(238, 50, 175);
+  border-radius: 50%;
   text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
   font-family: 'Potta One', cursive;
 }
