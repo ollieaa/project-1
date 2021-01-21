@@ -4,20 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="main.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Potta+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <title>Project 1</title>
 </head>
 <body>
-  <main>
-    <div id='grid'>
+  <div id='gameArea'>
+    <div id='topScreen'>
+      <div id='scoreDisplay'>
+        <div class='info' id='points'></div>
+        <div class='info' id='lives'></div>
+        <div class='info' id='wave'></div>
+        <div class='info' id='enemies'></div>
+      </div>
+    </div>
+    <div id='squareArea'>
+      <div id='floor'>
+        <div id='danceFloor'>       
+        </div>
+      </div>
+      <div id='grid'>
+
+      </div>
+    </div>
+  </div>  
+  <!-- <div id ='mobButtons'>
+    <div id='LR'>
 
     </div>
-    <div id='info'>
-      <button id='start'>START</button>
-      <div id='lives'></div>
-      <div id='score'></div>
+    <div id='shoot'>
+
     </div>
-    
-  </main>
+  </div> -->
+  <div id='info'>
+    <button id='start'>START</button>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>

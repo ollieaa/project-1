@@ -3,26 +3,97 @@
 }
 
 body {
+  height: 100vh;
+  /* width: 100vw; */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(to top right, #100016, #20002c, #3d0268 100%);
 }
-main {
+#gameArea {
+  /* visibility:hidden; */
+}
+#squareArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#topScreen {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  width: 500px;
+  height: 111px;
+  background-image: url('./images/screen.png');
+  background-size: auto;
+}
+#scoreDisplay {
+  display:flex;
+  flex-flow: row wrap;
+  align-items: flex-end;
+  width: 40%;
+  height: 80%;
+}
+.info {
+  width: 50%;
+  height: 50%;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  text-align:center;
+  vertical-align: middle;
+
+}
+#floor {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  position: absolute;
+  z-index: -1;
+  width: 500px;
+  height: 500px;
+  background-image: url('./images/floor.png');
+  background-size:contain;
+  border: 5px solid black;
+}
+#danceFloor  {
+  display: flex;
+  flex-flow: row wrap;
+  width: 350px;
+  height: 350px;
+  border: 5px solid black;
+  border-radius: 10px;
+}
+.tile {
+  border: 1px solid rgb(43, 43, 43);
 }
 #grid {
   display: flex;
   flex-flow: row wrap;
-  justify-content: center;
   align-items: center;
   width: 500px;
   height: 500px;
-  border: 1px solid black
 }
+#mobButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+#LR {
+  display:flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+/* #fire {
+  display: flex;
+  flex-direction: row;
+  justify-content:center;
+  align-items:center;
+} */
 #info {
   display:flex;
   flex-direction: column;
@@ -30,7 +101,6 @@ main {
   justify-content: center;
 }
 .cell {
-  border: 1px solid black;
   display: flex;
   flex-direction: row;
   justify-content:center;
@@ -40,25 +110,36 @@ main {
   background: white
 }
 .enemy {
-  background: green;
+  background: url('./images/zommale.png');
+  background-size:cover;
 }
 .player {
-  background: blue;
+  background: url('./images/player.png');
+  background-size: cover;
 }
 .life {
-  background: red;
+  background: url('./images/life.png');
+  background-size: cover;
 }
 .squad {
-  background: black;
+  background: url('./images/squad.png');
+  background-size: cover;
 }
 .squadLeft {
-  background: purple;
+  background: url('./images/squadleft.png');
+  background-size: cover;
 }
 .squadRight {
-  background: pink;
+  background: url('./images/squadright.png');
+  background-size: cover;
+}
+.splat {
+  background: url('./images/splat.png');
+  background-size: cover;
 }
 .POL {
-  background: turquoise;
+  background: url('./images/POL.png');
+  background-size: cover;
 }
 .boss1 {
   background: rgb(255, 176, 189);
@@ -102,9 +183,11 @@ main {
   position:absolute;
   width: 500px;
   height: 200px;
-  background: black;
-  color: white;
+  background: radial-gradient(#434343, #000000);
   font-size: 36px;
+  color: rgb(238, 50, 175);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+  font-family: 'Potta One', cursive;
 } 
 .victoryDisplay, .gameOverDisplay {
   display:flex;
@@ -114,16 +197,23 @@ main {
   position:absolute;
   width: 500px;
   height: 500px;
-  background: black;
+  background: radial-gradient(#434343, #000000);
+  font-family: 'Potta One', cursive;
   font-size: 36px;
-  color: white;
+  color: rgb(238, 50, 175);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
 .victoryText, .gameOverText {
   text-align: center;
+  font-family: 'Potta One', cursive;
   font-size: 36px;
-  color: white;
+  color: rgb(238, 50, 175);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+  
 }
 .playAgain, .tryAgain {
   text-align:center;
-  color: white;
+  color: rgb(238, 50, 175);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+  font-family: 'Potta One', cursive;
 }

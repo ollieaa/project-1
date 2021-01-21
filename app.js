@@ -1,21 +1,41 @@
+const colours = [
+  'linear-gradient(to bottom, #fceabb 0%,#fccd4d 50%,#f8b500 51%,#fbdf93 100%)',
+  'linear-gradient(to bottom, #f3c5bd 0%,#e86c57 50%,#ea2803 51%,#ff6600 75%,#c72200 100%)',
+  'linear-gradient(to bottom, #cb60b3 0%,#c146a1 50%,#a80077 51%,#db36a4 100%)',
+  'linear-gradient(to bottom, #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%)',
+  'linear-gradient(to bottom, #b4ddb4 0%,#83c783 17%,#52b152 33%,#008a00 67%,#005700 83%,#002400 100%)',
+  'linear-gradient(to bottom, rgba(30,87,153,1) 0%,rgba(41,137,216,1) 50%,rgba(32,124,202,1) 51%,rgba(125,185,232,1) 100%)',
+  'linear-gradient(to bottom, rgba(240,183,161,1) 0%,rgba(140,51,16,1) 50%,rgba(117,34,1,1) 51%,rgba(191,110,78,1) 100%)',
+  'linear-gradient(to bottom, rgba(252,236,252,1) 0%,rgba(251,166,225,1) 50%,rgba(253,137,215,1) 51%,rgba(255,124,216,1) 100%)'
+]
+function randomColour() {
+  return colours[Math.floor(Math.random() * colours.length)]
+}
+
+
 //TEST BUTTONS
 const start = document.querySelector('#start')
+const scoreDisplay = document.querySelector('#points')
 const livesDisplay = document.querySelector('#lives')
-const scoreDisplay = document.querySelector('#score')
+const waveDisplay = document.querySelector('#wave')
+const enemiesDisplay = document.querySelector('#enemies')
 
 //GLOBAL VARIABLES
 const cells = []
+const tiles = []
 const width = 9
+const tileWidth = 7 
 let lives = 3 
 let score = 0
-let wave = 9
+let wave = 1
 const grid = document.querySelector('#grid')
+const danceFloor = document.querySelector('#danceFloor')
 let playerPos = 4
 let enemyAttackSpeed = [500, 500, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 3000]
 let enemyPositions = []
 let enemiesRemaining = null
 let spawnsRemaining = null
-let bossLives = 2
+let bossLives = 30
 
 //GLOBAL GAME STATES
 let fire = false
@@ -27,6 +47,7 @@ let play = false
 let moveTime = null
 let enemySpawnTime = null
 let powerSpawnTime = null
+let floorTime = null
 
 //Generate an array of arrays of dom objects, making up the cells of the grid. 
 //Having a seperate array for each row in the grid will make life easier down the line.
@@ -36,7 +57,6 @@ for (let y = 0; y < width; y++) {
     const cell = document.createElement('div')
     cell.classList.add('cell') 
     grid.appendChild(cell)
-    // cell.innerText = `${y}${x}`
     cells[y].push(cell) 
     cell.style.width = `${(100 / width)}%`
     cell.style.height = `${(100 / width)}%`
@@ -47,8 +67,24 @@ for (let y = 0; y < width; y++) {
     }
   }
 }
+//Generate Dancefloor
+for (let x = 0; x <= 48; x++) {
+  const tile = document.createElement('div')
+  tile.classList.add('tile')
+  danceFloor.appendChild(tile)
+  tile.style.width = `${(100 / tileWidth)}%`
+  tile.style.height = `${(100 / tileWidth)}%`
+  tile.style.background = `${randomColour()}`
+  tiles.push(tile)
+}
 
 //EVENT LISTENERS
+//Disable page scroll
+window.addEventListener("keydown", function(e) {
+  if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+      e.preventDefault();
+  }
+}, false);
 //player movement
 document.addEventListener('keydown', (event) => {
   const key = event.key
@@ -96,7 +132,7 @@ document.addEventListener('keydown', (event) => {
     fire = false
     setTimeout(() => {
       fire = true
-    }, 500)
+    }, 300)
   } else {
     return
   }
@@ -126,7 +162,15 @@ function initialise() {
   clearInterval(powerSpawnTime)
   clearInterval(moveTime)
   clearInterval(enemySpawnTime)
+  clearInterval(floorTime)
   clearGrid()
+}
+function animateFloor() {
+  floorTime = setInterval(() => {
+      tiles.forEach((tile) => {
+      tile.style.background = `${randomColour()}`
+    })
+  }, 500)   
 }
 
 function moveFunction() {
@@ -139,17 +183,22 @@ function startGame() {
   fire = true
   scoreDisplay.innerText = `Score: ${score}`
   livesDisplay.innerText = `Lives: ${lives}`
+  waveDisplay.innerText = `Wave: ${wave}`
   startingEnemies(wave)
   updateEnemyPos()
   addClass(cells[8][4], 'player')
-  // moveFunction()
+  moveFunction()
   enemyAttackLoop()
   powerSpawn()
+  animateFloor()
+  enemiesDisplay.innerText = `Enemies: ${enemiesRemaining}`
+  addClass(cells[6][8], 'POL')
 }
 function waveCleared() {
   play = false
   clearInterval(moveTime)
   clearInterval(powerSpawnTime)
+  clearInterval(floorTime)
   clearGrid()
   enemyAttackSpeed.pop()
   const clearedDisplay = document.createElement('div')
@@ -157,6 +206,7 @@ function waveCleared() {
   clearedDisplay.innerText = `Wave ${wave} Cleared!`
   grid.appendChild(clearedDisplay)
   wave++
+  waveDisplay.innerText = `Wave: ${wave}`
   setTimeout (() => {
     if (wave < 10) {
       clearedDisplay.innerText = `Get ready for Wave ${wave}...`
@@ -175,7 +225,8 @@ function waveCleared() {
       moveFunction()
       enemyAttackLoop()
       spawnEnemies()
-      powerSpawn()  
+      powerSpawn()
+      animateFloor()  
     }, 6050) 
   } else if (wave === 10) {
     setTimeout (() => {  
@@ -186,7 +237,8 @@ function waveCleared() {
       enemyAttackLoop()
       spawnEnemies()
       powerSpawn()
-      bossMoveLoop()  
+      bossMoveLoop()
+      animateFloor()  
     }, 6050)
   }
 }
@@ -216,6 +268,7 @@ function updateLives() {
   }
 }
 function checkEnemies() {
+  enemiesDisplay.innerText = `Enemies: ${enemiesRemaining}`
   if (enemiesRemaining === 0 && lives > 0) {
     waveCleared()
   }
@@ -398,6 +451,7 @@ function shoot(position) {
   //If cell above player contains enemy, dont spawn bullet
   if (cells[bulletY][position].classList.contains('enemy')) {
     removeClass(cells[bulletY][position], 'enemy')
+    zomSplat(cells[bulletY][position])
     updateEnemyPos()
     score++
     enemiesRemaining--
@@ -408,10 +462,11 @@ function shoot(position) {
     //Create new bullet class and image
     addClass(cells[bulletY][position], 'bullet')
     const bullet = document.createElement('img')
+    bullet.style.width ='3%'
     if (POL === false) {
       bullet.src='./images/bullet.png'
     } else {
-      bullet.src='./images/bottle.png'
+      bullet.src='./images/heart.png'
     }
     addClass(bullet, 'bulletPic')
     cells[bulletY][position].appendChild(bullet)
@@ -428,6 +483,7 @@ function shoot(position) {
         //If bullet hits enemy
         if (cells[bulletY - 1][position].classList.contains('enemy')) {
           removeClass(cells[bulletY - 1][position], 'enemy')
+          zomSplat(cells[bulletY - 1][position])
           updateEnemyPos()
           score++
           enemiesRemaining--
@@ -658,8 +714,10 @@ function spawnEnemies() {
     if (spawnsRemaining > 0) {
       if (wave === 10) {
         addClass(cells[4][0], 'enemy')
+        addClass(cells[4][0], `${randomZom()}`)
       } else {
         addClass(cells[0][0], 'enemy')
+        addClass(cells[0][0], `${randomZom()}`)
       }     
       spawnsRemaining--
     } else {
@@ -772,4 +830,14 @@ function bossMoveLeft() {
       } 
     }
   }
+}
+function randomZom() {
+  const zoms = ['male', 'female']
+  return zoms[Math.floor(Math.random() * zoms.length)]
+}
+function zomSplat(cell) {
+  cell.classList.add('splat')
+  setTimeout(() => {
+    cell.classList.remove('splat')
+  }, 100)
 }
