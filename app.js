@@ -35,7 +35,7 @@ health.volume=0.4
 const POLAudio = new Audio('./audio/pol.wav')
 POLAudio.volume = 0.4
 const squadAudio = new Audio('./audio/squad.wav')
-squadAudio.volume= 0.5
+squadAudio.volume= 0.7
 
 //GLOBAL VARIABLES
 const cells = []
