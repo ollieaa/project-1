@@ -33,7 +33,7 @@ vamp.loop
 vamp.volume = 0.7
 const gunshot = new Audio('./audio/gunshot.wav')
 const ouch = new Audio('./audio/ouch.mp3')
-ouch.volume = 0.1
+ouch.volume = 0.3
 const stinger = new Audio('./audio/stinger.wav');
 stinger.volume = 0.5
 const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
@@ -267,6 +267,13 @@ function startGame() {
   enemiesDisplay.innerText = `Enemies: ${enemiesRemaining}`
 }
 function waveCleared() {
+  if (wave === 6) {
+    vamp.pause()
+    vamp.currentTime = 0
+    setTimeout(() => {
+      vamp.play()
+    }, 6000)
+  }
   play = false
   clearInterval(moveTime)
   clearInterval(powerSpawnTime)
