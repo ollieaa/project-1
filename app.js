@@ -156,6 +156,26 @@ document.addEventListener('keydown', (event) => {
     return
   }
 })
+document.addEventListener('keydown', (event) => {
+  const key = event.key
+  if (key === 'p') {
+    addClass(cells[6][4], 'POL')
+  }
+})
+document.addEventListener('keydown', (event) => {
+  const key = event.key
+  if (key === 's') {
+    addClass(cells[6][4], 'squad')
+  }
+})
+document.addEventListener('keydown', (event) => {
+  const key = event.key
+  if (key === 'h') {
+    addClass(cells[6][4], 'health')
+  }
+})
+
+
 //Start Game
 start.addEventListener('click', () => { 
   stinger.play()
