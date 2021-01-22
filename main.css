@@ -259,3 +259,21 @@ body {
   text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
   font-family: 'Potta One', cursive;
 }
+
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 812px) 
+  and (-webkit-min-device-pixel-ratio: 3)
+  and (orientation: portrait) { 
+
+#banner {
+  width: 90%;
+}
+#start {
+  width: 40%;
+}
+
+
+
+
+}
