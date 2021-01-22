@@ -30,8 +30,13 @@ const zomGrowls = ['./audio/zombie1.wav', './audio/zombie2.wav', './audio/zombie
 const splats = ['./audio/splat1.wav', './audio/splat2.wav', './audio/splat3.wav', './audio/splat4.wav', './audio/splat5.wav', './audio/splat6.wav']
 const vamp = new Audio('./audio/vamp.mp3')
 vamp.loop
-vamp.volume = 0.6
+vamp.volume = 0.7
 const gunshot = new Audio('./audio/gunshot.wav')
+const ouch = new Audio('./audio/ouch.mp3')
+const stinger = new Audio('./audio/stinger.wav');
+stinger.volume = 0.5
+const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
+const stinger2 = new Audio('./audio/stinger2.wav')
 
 //GLOBAL VARIABLES
 const cells = []
@@ -152,14 +157,11 @@ document.addEventListener('keydown', (event) => {
   }
 })
 //Start Game
-start.addEventListener('click', () => {
-  const stinger = new Audio('./audio/stinger.wav');
-  stinger.volume = 0.5
+start.addEventListener('click', () => { 
   stinger.play()
   titleScreen.remove()
   introText.style.visibility = 'visible'
-  setTimeout(() => {
-    const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
+  setTimeout(() => {  
     cutsceneAudio.play()
     introText.innerText = 'London 2:48am...'
   }, 4000)
@@ -177,7 +179,6 @@ start.addEventListener('click', () => {
   }, 25000)
   setTimeout(() => {
     gameArea.style.visibility = 'visible'
-    const stinger2 = new Audio('./audio/stinger2.wav')
     stinger2.play()
   }, 28000)
   setTimeout(() => {
@@ -497,7 +498,7 @@ function shoot(position) {
   if (POL === false) {
     
     gunshot.play()
-    gunshot.volume = 0.5
+    gunshot.volume = 0.45
   }
   const splat = new Audio (`${splats[Math.floor(Math.random()*splats.length)]}`)
   splat.volume = 0.1 
@@ -552,28 +553,32 @@ function shoot(position) {
           lives++ 
           updateLives()   
           clearInterval(bulletTime)
-          const health = new Audio('./audio/health.wav')
+          const health = new Audio('./audio/health.mp3')
+          health.volume=0.8
           health.play()
           //If bullet hits squad power
         } else if (cells[bulletY - 1][position].classList.contains('squad')) {
           const squadAudio = new Audio('./audio/squad.wav')
           squadAudio.play()
           removeClass(cells[bulletY - 1][position], 'squad')
-          squad = true
-          for (let x = 0; x <= 8; x++) {
-            if (cells[8][x].classList.contains('player')) {
-              removeClass(cells[8][x], 'player')
-            }
-          }
-          addClass(cells[8][4], 'player')
-          addClass(cells[8][3], 'squadLeft')
-          addClass(cells[8][5], 'squadRight')
-          playerPos = 4
           setTimeout(() => {
-            squad = false
-            removeClass(cells[8][playerPos-1], 'squadLeft')
-            removeClass(cells[8][playerPos+1], 'squadRight') 
-          }, 6000)
+            squad = true
+            for (let x = 0; x <= 8; x++) {
+              if (cells[8][x].classList.contains('player')) {
+                removeClass(cells[8][x], 'player')
+              }
+            }
+            addClass(cells[8][4], 'player')
+            addClass(cells[8][3], 'squadLeft')
+            addClass(cells[8][5], 'squadRight')
+            playerPos = 4
+            setTimeout(() => {
+              squad = false
+              removeClass(cells[8][playerPos-1], 'squadLeft')
+              removeClass(cells[8][playerPos+1], 'squadRight') 
+            }, 6000)
+          }, 2000)
+            
           clearInterval(bulletTime)
         } else if (cells[bulletY - 1][position].classList.contains('POL')) {
           vamp.volume=0
@@ -656,6 +661,7 @@ function enemyAttack() {
         } else {
           //If bottle hits player
           if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
+            ouch.play()
             if (POL === false) {
               lives--
               updateLives()
