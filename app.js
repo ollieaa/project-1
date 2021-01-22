@@ -13,7 +13,7 @@ function randomColour() {
 }
 
 
-//TEST BUTTONS
+//QUERY SELECTORS
 const start = document.querySelector('#start')
 const titleScreen = document.querySelector('#titleScreen')
 const gameArea = document.querySelector('#gameArea')
@@ -21,6 +21,17 @@ const scoreDisplay = document.querySelector('#points')
 const livesDisplay = document.querySelector('#lives')
 const waveDisplay = document.querySelector('#wave')
 const enemiesDisplay = document.querySelector('#enemies')
+const introText = document.querySelector('#cutscene')
+const clearedDisplay = document.createElement('div')
+
+//AUDIO
+const zomGrowls = ['./audio/zombie1.wav', './audio/zombie2.wav', './audio/zombie3.wav', './audio/zombie4.wav',
+'./audio/zombie5.wav', './audio/zombie6.wav', './audio/zombie7.wav', './audio/zombie8.wav']
+const splats = ['./audio/splat1.wav', './audio/splat2.wav', './audio/splat3.wav', './audio/splat4.wav', './audio/splat5.wav', './audio/splat6.wav']
+const vamp = new Audio('./audio/vamp.mp3')
+vamp.loop
+vamp.volume = 0.6
+const gunshot = new Audio('./audio/gunshot.wav')
 
 //GLOBAL VARIABLES
 const cells = []
@@ -126,6 +137,7 @@ document.addEventListener('keydown', (event) => {
   if (key === ' ' && fire === true && play === true) {     
     if (squad === false) {
       shoot(playerPos)
+      // gunshotAudio.play()
     } else if (squad === true) {
       shoot(playerPos)
       shoot(playerPos-1)
@@ -141,10 +153,42 @@ document.addEventListener('keydown', (event) => {
 })
 //Start Game
 start.addEventListener('click', () => {
-  startGame()
+  const stinger = new Audio('./audio/stinger.wav');
+  stinger.volume = 0.5
+  stinger.play()
   titleScreen.remove()
-  gameArea.style.visibility = 'visible'
-
+  introText.style.visibility = 'visible'
+  setTimeout(() => {
+    const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
+    cutsceneAudio.play()
+    introText.innerText = 'London 2:48am...'
+  }, 4000)
+  setTimeout(() => {
+    introText.innerText = 'Police receive reports of a strange viral outbreak in one of the city\'s lesser known nightclubs...'
+  }, 8000)
+  setTimeout(() => {
+    introText.innerText = 'As an ex-cop with a track record for bringing disco bums to justice, you were the one they called to clean up the mess.'
+  }, 14000)
+  setTimeout(() => {
+    introText.innerText = 'Don\'t let any of these creatures leave the establishment. And try to stay alive...'
+  }, 20000)
+  setTimeout(() => {
+    introText.remove()
+  }, 25000)
+  setTimeout(() => {
+    gameArea.style.visibility = 'visible'
+    const stinger2 = new Audio('./audio/stinger2.wav')
+    stinger2.play()
+  }, 28000)
+  setTimeout(() => {
+    clearedDisplay.classList.add('cleared')
+    clearedDisplay.innerText = `Get ready for the first wave...`
+    grid.appendChild(clearedDisplay)
+  }, 31000)
+  setTimeout(() => {
+    grid.removeChild(clearedDisplay)
+    startGame()
+  }, 37000)
 })
 
 //FUNCTIONS
@@ -174,7 +218,7 @@ function animateFloor() {
       tiles.forEach((tile) => {
       tile.style.background = `${randomColour()}`
     })
-  }, 500)   
+  }, 1000)   
 }
 
 function moveFunction() {
@@ -195,13 +239,15 @@ function startGame() {
   enemyAttackLoop()
   powerSpawn()
   animateFloor()
+  zombieAudio()
+  vamp.currentTime=0
+  vamp.play()
   enemiesDisplay.innerText = `Enemies: ${enemiesRemaining}`
 }
 function waveCleared() {
   play = false
   clearInterval(moveTime)
   clearInterval(powerSpawnTime)
-  clearInterval(floorTime)
   clearGrid()
   enemyAttackSpeed.pop()
   const clearedDisplay = document.createElement('div')
@@ -229,7 +275,7 @@ function waveCleared() {
       enemyAttackLoop()
       spawnEnemies()
       powerSpawn()
-      animateFloor()  
+      zombieAudio() 
     }, 6050) 
   } else if (wave === 10) {
     setTimeout (() => {  
@@ -241,7 +287,7 @@ function waveCleared() {
       spawnEnemies()
       powerSpawn()
       bossMoveLoop()
-      animateFloor()  
+      zombieAudio()  
     }, 6050)
   }
 }
@@ -448,11 +494,19 @@ function startingEnemies(waveNum) {
 } 
 //Player Shooting
 function shoot(position) {
+  if (POL === false) {
+    
+    gunshot.play()
+    gunshot.volume = 0.5
+  }
+  const splat = new Audio (`${splats[Math.floor(Math.random()*splats.length)]}`)
+  splat.volume = 0.1 
   let bulletY = 7
   //If cell above player contains enemy, dont spawn bullet
   if (cells[bulletY][position].classList.contains('enemy')) {
     removeClass(cells[bulletY][position], 'enemy')
     zomSplat(cells[bulletY][position])
+    splat.play()
     updateEnemyPos()
     score++
     enemiesRemaining--
@@ -485,6 +539,7 @@ function shoot(position) {
         if (cells[bulletY - 1][position].classList.contains('enemy')) {
           removeClass(cells[bulletY - 1][position], 'enemy')
           zomSplat(cells[bulletY - 1][position])
+          splat.play()
           updateEnemyPos()
           score++
           enemiesRemaining--
@@ -497,8 +552,12 @@ function shoot(position) {
           lives++ 
           updateLives()   
           clearInterval(bulletTime)
+          const health = new Audio('./audio/health.wav')
+          health.play()
           //If bullet hits squad power
         } else if (cells[bulletY - 1][position].classList.contains('squad')) {
+          const squadAudio = new Audio('./audio/squad.wav')
+          squadAudio.play()
           removeClass(cells[bulletY - 1][position], 'squad')
           squad = true
           for (let x = 0; x <= 8; x++) {
@@ -517,10 +576,15 @@ function shoot(position) {
           }, 6000)
           clearInterval(bulletTime)
         } else if (cells[bulletY - 1][position].classList.contains('POL')) {
+          vamp.volume=0
+          const POLAudio = new Audio('./audio/pol.wav')
+          POLAudio.volume = 0.6
+          POLAudio.play()
           removeClass(cells[bulletY - 1][position], 'POL')
           POL = true
           setTimeout(() => {
             POL = false
+            vamp.volume=0.5
           }, 10000)
         } else if (cells[bulletY - 1][position].classList.contains('boss4')||cells[bulletY - 1][position].classList.contains('boss5')||cells[bulletY - 1][position].classList.contains('boss6')) {
           bossLives--
@@ -669,8 +733,14 @@ function moveAssets() {
 
 //Game Over
 function gameOver() {
+  vamp.pause()
+  const gameSting = new Audio('./audio/stinger.wav')
+  gameSting.play()
+  play = false
+  fire = false
   enemiesRemaining = 0
   clearInterval(moveTime)
+  clearInterval(floorTime)
   clearGrid()
   for (let x = 0; x <= 8; x++) {
     let cell = cells[8][x]
@@ -745,6 +815,17 @@ function powerSpawn() {
       addClass(cells[3][8], powerUps[Math.floor(Math.random() * powerUps.length)])
     }    
   }, 20000)
+}
+function zombieAudio() {
+  const times = [3000, 4000, 5000, 6000]
+  setTimeout(() => {
+    const zomGrowl = new Audio (`${zomGrowls[Math.floor(Math.random()*zomGrowls.length)]}`)
+    zomGrowl.volume = 0.1
+    if (play === true) {
+    zomGrowl.play()
+    zombieAudio()
+    }
+  }, times[Math.floor(Math.random()*times.length)]) 
 }
 
 function bossMoveLoop() {
