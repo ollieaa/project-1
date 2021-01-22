@@ -463,7 +463,7 @@ function startingEnemies(waveNum) {
     }
   } else if (waveNum === 5) {
     //28 initial
-    enemiesRemaining = 58
+    enemiesRemaining = 55
     spawnsRemaining = 30
     for (let y = 4; y >= 1; y-- ) {
       for (let x = 7; x > 0; x--){
