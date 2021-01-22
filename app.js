@@ -1,8 +1,4 @@
 
-function randomColour() {
-  return colours[Math.floor(Math.random() * colours.length)]
-}
-
 //QUERY SELECTORS
 const grid = document.querySelector('#grid')
 const danceFloor = document.querySelector('#danceFloor')
@@ -264,6 +260,9 @@ function animateFloor() {
       tile.style.background = `${randomColour()}`
     })
   }, 1000)   
+}
+function randomColour() {
+  return colours[Math.floor(Math.random() * colours.length)]
 }
 function startingEnemies(waveNum) {
   if (waveNum === 1){

@@ -32,12 +32,6 @@ body {
   color: white;
   text-align:center
 }
-#banner{
-  
-}
-#start {
-
-}
 #gameArea {
   visibility:hidden;
 }
@@ -68,7 +62,7 @@ body {
   width: 50%;
   height: 50%;
   font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
+  font-size: 11px;
   text-align:center;
   vertical-align: middle;
 
@@ -242,7 +236,7 @@ body {
 .gameOver {
   width: 80%;
 }
-.victoryText, .gameOverText {
+.victoryText {
   text-align: center;
   font-family: 'Potta One', cursive;
   font-size: 36px;
@@ -266,14 +260,50 @@ body {
   and (-webkit-min-device-pixel-ratio: 3)
   and (orientation: portrait) { 
 
+body {
+  width: 100%vw;
+  background-repeat:no-repeat;
+}
+
 #banner {
-  width: 90%;
+  width: 95%;
 }
 #start {
-  width: 40%;
+  width: 60%;
 }
-
-
-
-
+#cutscene {
+  width: 80%;
+  font-size: 20px;
 }
+#floor, #grid {
+  width: 370px;
+  height: 370px;
+}
+#danceFloor {
+  width: 280px;
+  height: 280px;
+}
+#topScreen {
+  width: 370px;
+  height: 82px;
+  background-size:cover;
+}
+.cleared {
+  width:370px;
+  height: 148px;
+}
+.victoryDisplay, .gameOverDisplay {
+  width: 370px;
+  height: 370px;
+}
+.victoryText {
+  font-size: 20px;
+}
+.bulletPic, .bottlePic {
+  object-fit:initial;
+  /* height: 25px;
+  width: 5px; */
+}
+  }
+
+
