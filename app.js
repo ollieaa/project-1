@@ -33,7 +33,7 @@ vamp.loop
 vamp.volume = 0.7
 const gunshot = new Audio('./audio/gunshot.wav')
 const ouch = new Audio('./audio/ouch.mp3')
-ouch.volume = 0.3
+ouch.volume = 0.1
 const stinger = new Audio('./audio/stinger.wav');
 stinger.volume = 0.5
 const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
@@ -575,7 +575,7 @@ function shoot(position) {
           updateLives()   
           clearInterval(bulletTime)
           const health = new Audio('./audio/health.mp3')
-          health.volume=0.8
+          health.volume=0.4
           health.play()
           //If bullet hits squad power
         } else if (cells[bulletY - 1][position].classList.contains('squad')) {
@@ -598,7 +598,7 @@ function shoot(position) {
               removeClass(cells[8][playerPos-1], 'squadLeft')
               removeClass(cells[8][playerPos+1], 'squadRight') 
             }, 6000)
-          }, 2000)
+          }, 1000)
             
           clearInterval(bulletTime)
         } else if (cells[bulletY - 1][position].classList.contains('POL')) {
@@ -682,8 +682,8 @@ function enemyAttack() {
         } else {
           //If bottle hits player
           if (cells[bottleY+1][bottleX].classList.contains('player') && play === true) {
-            ouch.play()
             if (POL === false) {
+              ouch.play()
               lives--
               updateLives()
               clearInterval(enemyAttackMotion)
