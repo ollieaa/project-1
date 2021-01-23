@@ -27,7 +27,7 @@ stinger.volume = 0.5
 const cutsceneAudio = new Audio('./audio/cutsceneaudio.wav')
 const stinger2 = new Audio('./audio/stinger2.wav')
 const health = new Audio('./audio/health.mp3')
-health.volume=0.4
+health.volume=0.2
 const POLAudio = new Audio('./audio/pol.wav')
 POLAudio.volume = 0.4
 const squadAudio = new Audio('./audio/squad.wav')
@@ -447,7 +447,7 @@ function shoot(position) {
     gunshot.volume = 0.45
   }
   const splat = new Audio (`${splats[Math.floor(Math.random()*splats.length)]}`)
-  splat.volume = 0.1 
+  splat.volume = 0.07
   let bulletY = 7
   //If cell above player contains enemy, dont spawn bullet
   if (cells[bulletY][position].classList.contains('enemy')) {
